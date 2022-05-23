@@ -30,6 +30,10 @@ public class Planet implements Serializable {
     this.height = height;
   }
 
+  public UUID getId() {
+    return id;
+  }
+
   public int getWidth() {
     return width;
   }
