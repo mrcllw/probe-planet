@@ -48,6 +48,18 @@ public class Probe implements Serializable {
     this.planet = planet;
   }
 
+  public Probe(UUID id, int x, int y, DirectionEnum direction, Planet planet) {
+    this.id = id;
+    this.x = x;
+    this.y = y;
+    this.direction = direction;
+    this.planet = planet;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
   public int getX() {
     return x;
   }

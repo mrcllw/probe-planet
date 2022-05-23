@@ -1,10 +1,12 @@
 package com.example.demo.controllers;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.validation.Valid;
 
 import com.example.demo.dtos.CreateProbeDto;
+import com.example.demo.dtos.MoveProbeDto;
 import com.example.demo.models.Planet;
 import com.example.demo.models.Probe;
 import com.example.demo.service.PlanetService;
@@ -13,7 +15,9 @@ import com.example.demo.service.ProbeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,5 +57,27 @@ public class ProbeController {
     }
 
     return ResponseEntity.status(HttpStatus.CREATED).body(probeService.save(probe));
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<Probe> move(@PathVariable(value = "id") UUID id, @RequestBody @Valid MoveProbeDto moveDto) {
+    Optional<Probe> probe = probeService.findById(id);
+    if (probe.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Probe not found");
+    }
+
+    Probe movedProbe = probeService.move(probe.get(), moveDto.getCommands());
+
+    Boolean isValidCoordinates = probeService.checkIfCoordinatesIsValid(movedProbe);
+    if (!isValidCoordinates) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid command");
+    }
+
+    Boolean isOccupiedPosition = probeService.checkIfPositionIsOccupied(movedProbe.getX(), movedProbe.getY());
+    if (isOccupiedPosition) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already exists a probe at resulting coordinate");
+    }
+
+    return ResponseEntity.status(HttpStatus.OK).body(probeService.save(movedProbe));
   }
 }
