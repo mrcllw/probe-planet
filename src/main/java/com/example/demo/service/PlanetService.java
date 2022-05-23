@@ -1,5 +1,8 @@
 package com.example.demo.service;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import javax.transaction.Transactional;
 
 import com.example.demo.models.Planet;
@@ -16,5 +19,9 @@ public class PlanetService {
   @Transactional
   public Planet save(Planet planet) {
     return planetRepository.save(planet);
+  }
+
+  public Optional<Planet> findById(UUID id) {
+    return planetRepository.findById(id);
   }
 }

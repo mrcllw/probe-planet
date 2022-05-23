@@ -38,4 +38,29 @@ public class Probe implements Serializable {
   @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   @JoinColumn(name = "planet_id", referencedColumnName = "id")
   private Planet planet;
+
+  public Probe() {}
+
+  public Probe(int x, int y, DirectionEnum direction, Planet planet) {
+    this.x = x;
+    this.y = y;
+    this.direction = direction;
+    this.planet = planet;
+  }
+
+  public int getX() {
+    return x;
+  }
+
+  public int getY() {
+    return y;
+  }
+
+  public DirectionEnum getDirection() {
+    return direction;
+  }
+
+  public Planet getPlanet() {
+    return planet;
+  }
 }
