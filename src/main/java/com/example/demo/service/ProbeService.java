@@ -1,9 +1,7 @@
 package com.example.demo.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,6 +9,7 @@ import javax.transaction.Transactional;
 
 import com.example.demo.enums.CommandEnum;
 import com.example.demo.enums.DirectionEnum;
+import com.example.demo.models.Coordinates;
 import com.example.demo.models.Planet;
 import com.example.demo.models.Probe;
 import com.example.demo.repositories.ProbeRepository;
@@ -28,21 +27,16 @@ public class ProbeService {
     return probeRepository.save(probe);
   }
 
-  private Optional<Probe> findByCoordinates(int x, int y) {
-    return probeRepository.findOneByXAndY(x, y);
-  }
+  public Boolean checkIfCoordinatesIsValid(Planet planet, Coordinates coordinates) {
 
-  public Boolean checkIfCoordinatesIsValid(Probe probe) {
-    Planet planet = probe.getPlanet();
-
-    Boolean isValidXCoordinate = Math.abs(probe.getX()) <= planet.getWidth();
-    Boolean isValidYCoordinate = Math.abs(probe.getY()) <= planet.getHeight();
+    Boolean isValidXCoordinate = Math.abs(coordinates.getX()) <= planet.getWidth();
+    Boolean isValidYCoordinate = Math.abs(coordinates.getY()) <= planet.getHeight();
 
     return isValidXCoordinate && isValidYCoordinate;
   }
 
-  public Boolean checkIfPositionIsOccupied(int x, int y) {
-    Optional<Probe> probe = findByCoordinates(x, y);
+  public Boolean checkIfPositionIsOccupied(Coordinates coordinates) {
+    Optional<Probe> probe = probeRepository.findOneByCoordinates(coordinates);
 
     return probe.isPresent();
   }
@@ -54,28 +48,26 @@ public class ProbeService {
   public Probe move(Probe probe, String commands) {
     List<CommandEnum> commandList = getCommands(commands);
     DirectionEnum direction = probe.getDirection();
-    Map<String, Integer> coordinates = new HashMap<>();
-    coordinates.put("x", probe.getX());
-    coordinates.put("y", probe.getY());
+    Coordinates coordinates = new Coordinates(
+      probe.getCoordinates().getX(),
+      probe.getCoordinates().getY()
+    );
 
     for(CommandEnum command: commandList) {
       switch (command) {
         case LEFT:
-          direction = turnLeft(direction);
-          break;
         case RIGHT:
-          direction = turnRight(direction);
+          direction = direction.turn(command);
           break;
         case MOVE:
-          coordinates = moveForward(direction, coordinates.get("x"), coordinates.get("y"));
+          coordinates.move(direction);
           break;
       }
     }
 
     return new Probe(
       probe.getId(),
-      coordinates.get("x"),
-      coordinates.get("y"),
+      coordinates,
       direction,
       probe.getPlanet()
     );
@@ -90,73 +82,5 @@ public class ProbeService {
     }
 
     return commandList;
-  }
-
-  private DirectionEnum turnLeft(DirectionEnum direction) {
-    DirectionEnum newDirection = direction;
-
-    switch(direction) {
-      case NORTH:
-        newDirection = DirectionEnum.WEST;
-        break;
-      case EAST:
-        newDirection = DirectionEnum.NORTH;
-        break;
-      case SOUTH:
-        newDirection = DirectionEnum.EAST;
-        break;
-      case WEST:
-        newDirection = DirectionEnum.SOUTH;
-        break;
-    }
-
-    return newDirection;
-  }
-
-  private DirectionEnum turnRight(DirectionEnum direction) {
-    DirectionEnum newDirection = direction;
-
-    switch(direction) {
-      case NORTH:
-        newDirection = DirectionEnum.EAST;
-        break;
-      case EAST:
-        newDirection = DirectionEnum.SOUTH;
-        break;
-      case SOUTH:
-        newDirection = DirectionEnum.WEST;
-        break;
-      case WEST:
-        newDirection = DirectionEnum.NORTH;
-        break;
-    }
-
-    return newDirection;
-  }
-
-  private Map<String, Integer> moveForward(DirectionEnum direction, int x, int y) {
-    Map<String, Integer> coordinates = new HashMap<>();
-    int newX = x;
-    int newY = y;
-
-    switch(direction) {
-      case NORTH:
-        newY++;
-        break;
-      case EAST:
-        newX++;
-        break;
-      case SOUTH:
-        newY--;
-        break;
-      case WEST:
-        newX--;
-        break;
-    }
-
-    coordinates.put("x", newX);
-    coordinates.put("y", newY);
-
-    return coordinates;
   }
 }

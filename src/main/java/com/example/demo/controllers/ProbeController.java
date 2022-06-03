@@ -7,6 +7,7 @@ import javax.validation.Valid;
 
 import com.example.demo.dtos.CreateProbeDto;
 import com.example.demo.dtos.MoveProbeDto;
+import com.example.demo.models.Coordinates;
 import com.example.demo.models.Planet;
 import com.example.demo.models.Probe;
 import com.example.demo.service.PlanetService;
@@ -39,19 +40,23 @@ public class ProbeController {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Planet not found");
     }
 
-    Probe probe = new Probe(
+    Coordinates coordinates = new Coordinates(
       probeDto.getX(),
-      probeDto.getY(),
+      probeDto.getY()
+    );
+
+    Probe probe = new Probe(
+      coordinates,
       probeDto.getDirection(),
       planet.get()
     );
 
-    Boolean isValidCoordinates = probeService.checkIfCoordinatesIsValid(probe);
+    Boolean isValidCoordinates = probeService.checkIfCoordinatesIsValid(planet.get(), coordinates);
     if (!isValidCoordinates) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid coordinates");
     }
 
-    Boolean isOccupiedPosition = probeService.checkIfPositionIsOccupied(probe.getX(), probe.getY());
+    Boolean isOccupiedPosition = probeService.checkIfPositionIsOccupied(coordinates);
     if (isOccupiedPosition) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already exists a probe at this coordinate");
     }
@@ -68,12 +73,12 @@ public class ProbeController {
 
     Probe movedProbe = probeService.move(probe.get(), moveDto.getCommands());
 
-    Boolean isValidCoordinates = probeService.checkIfCoordinatesIsValid(movedProbe);
+    Boolean isValidCoordinates = probeService.checkIfCoordinatesIsValid(movedProbe.getPlanet(), movedProbe.getCoordinates());
     if (!isValidCoordinates) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid command");
     }
 
-    Boolean isOccupiedPosition = probeService.checkIfPositionIsOccupied(movedProbe.getX(), movedProbe.getY());
+    Boolean isOccupiedPosition = probeService.checkIfPositionIsOccupied(movedProbe.getCoordinates());
     if (isOccupiedPosition) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already exists a probe at resulting coordinate");
     }

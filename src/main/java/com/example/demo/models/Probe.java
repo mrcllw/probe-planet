@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -25,11 +26,8 @@ public class Probe implements Serializable {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private UUID id;
 
-  @Column(nullable = false)
-  private int x;
-
-  @Column(nullable = false)
-  private int y;
+  @Embedded
+  private Coordinates coordinates;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
@@ -41,17 +39,15 @@ public class Probe implements Serializable {
 
   public Probe() {}
 
-  public Probe(int x, int y, DirectionEnum direction, Planet planet) {
-    this.x = x;
-    this.y = y;
+  public Probe(Coordinates coordinates, DirectionEnum direction, Planet planet) {
+    this.coordinates = coordinates;
     this.direction = direction;
     this.planet = planet;
   }
 
-  public Probe(UUID id, int x, int y, DirectionEnum direction, Planet planet) {
+  public Probe(UUID id, Coordinates coordinates, DirectionEnum direction, Planet planet) {
     this.id = id;
-    this.x = x;
-    this.y = y;
+    this.coordinates = coordinates;
     this.direction = direction;
     this.planet = planet;
   }
@@ -60,12 +56,8 @@ public class Probe implements Serializable {
     return id;
   }
 
-  public int getX() {
-    return x;
-  }
-
-  public int getY() {
-    return y;
+  public Coordinates getCoordinates() {
+    return coordinates;
   }
 
   public DirectionEnum getDirection() {
